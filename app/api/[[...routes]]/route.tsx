@@ -2,7 +2,7 @@
 
 import { Button, Frog, TextInput } from "frog";
 import { handle } from "frog/vercel";
-import { PinataFDK, FrameActionPayload } from "pinata-fdk";
+import { PinataFDK } from "pinata-fdk";
 
 const pinataFdk = new PinataFDK({
   pinata_jwt: process.env.PINATA_JWT as string,
@@ -14,21 +14,8 @@ const app = new Frog({
   // hubApiUrl: "https://hub.pinata.cloud"
 });
 
-const usePinataAnalytics = async (context: any, next:any, pinataFdk: any) => {
-  try {
-  if (context.req.method === "POST") {
-    const body = await context.req.json();
-    const status = await pinataFdk.sendAnalytics("frog-middleware", body);
-    console.log(status)
-  }
-  await next();
-  } catch (error) {
-   console.log(error) 
-  }
-}
-
 app.use("/", async (context: any, next) => {
-  usePinataAnalytics(context, next, pinataFdk)
+  await pinataFdk.analyticsMiddleware(context, "frog-middleware-test-steve", next)
 });
 
 // Uncomment to use Edge Runtime
