@@ -4,34 +4,41 @@ import { Button, Frog, TextInput } from "frog";
 import { handle } from "frog/vercel";
 import { PinataFDK } from "pinata-fdk";
 
+type State = {
+  count: number;
+};
+
 const pinataFdk = new PinataFDK({
   pinata_jwt: process.env.PINATA_JWT as string,
   pinata_gateway: process.env.GATEWAY_URL as string,
 });
 
-const app = new Frog({
+const app = new Frog<State>({
   basePath: "/api",
+  initialState: {
+    count: 0,
+  },
   // hubApiUrl: "https://hub.pinata.cloud"
 });
 
 app.use("/", async (context: any, next) => {
-  await pinataFdk.analyticsMiddleware(context, "frog-middleware-test-steve", next)
+  await pinataFdk.analyticsMiddleware(context, "frog-analytics-tutorial", next)
 });
 
 // Uncomment to use Edge Runtime
 // export const runtime = 'edge'
 app.frame("/", (c) => {
-  const { buttonValue, inputText, status } = c;
-  const fruit = inputText || buttonValue;
+  const { buttonValue, deriveState } = c;
+  const state = deriveState((previousState) => {
+    if (buttonValue === "inc") previousState.count++;
+    if (buttonValue === "dec") previousState.count--;
+  });
   return c.res({
     image: (
       <div
         style={{
           alignItems: "center",
-          background:
-            status === "response"
-              ? "linear-gradient(to right, #432889, #17101F)"
-              : "black",
+          background: "linear-gradient(to right, #6FD392, #83E1C8)",
           backgroundSize: "100% 100%",
           display: "flex",
           flexDirection: "column",
@@ -40,32 +47,18 @@ app.frame("/", (c) => {
           justifyContent: "center",
           textAlign: "center",
           width: "100%",
+          fontSize: "64px",
         }}
       >
-        <div
-          style={{
-            color: "white",
-            fontSize: 60,
-            fontStyle: "normal",
-            letterSpacing: "-0.025em",
-            lineHeight: 1.4,
-            marginTop: 30,
-            padding: "0 120px",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {status === "response"
-            ? `Nice choice.${fruit ? ` ${fruit.toUpperCase()}!!` : ""}`
-            : "Welcome!"}
-        </div>
+        <div style={{
+          fontSize: "124px"
+        }}>🐸</div>
+        Ribbits: {state.count}
       </div>
     ),
     intents: [
-      <TextInput placeholder="Enter custom fruit..." />,
-      <Button value="apples">Apples</Button>,
-      <Button value="oranges">Oranges</Button>,
-      <Button value="bananas">Bananas</Button>,
-      status === "response" && <Button.Reset>Reset</Button.Reset>,
+      <Button value="dec">Less Ribbits</Button>,
+      <Button value="inc">More Ribbits</Button>,
     ],
   });
 });
