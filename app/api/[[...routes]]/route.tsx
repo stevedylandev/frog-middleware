@@ -51,7 +51,7 @@ app.frame("/", (c) => {
         }}
       >
         <div style={{
-          fontSize: "124px"
+          fontSize: "136px"
         }}>🐸</div>
         Ribbits: {state.count}
       </div>
