@@ -14,13 +14,21 @@ const app = new Frog({
   // hubApiUrl: "https://hub.pinata.cloud"
 });
 
-app.use("/", async (context: any, next) => {
+const usePinataAnalytics = async (context: any, next:any) => {
+  try {
   if (context.req.method === "POST") {
     const body = await context.req.json();
     const status = await pinataFdk.sendAnalytics("frog-middleware", body);
     console.log(status)
   }
   await next();
+  } catch (error) {
+   console.log(error) 
+  }
+}
+
+app.use("/", async (context: any, next) => {
+  usePinataAnalytics(context, next)
 });
 
 // Uncomment to use Edge Runtime
